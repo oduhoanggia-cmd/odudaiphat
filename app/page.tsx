@@ -2,12 +2,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { JsonLd } from '@/components/JsonLd';
 import { ProductCard } from '@/components/ProductCard';
-import { categories, products } from '@/lib/products';
+import { categories } from '@/lib/products';
+import { getPublishedProducts } from '@/lib/db-products';
 import { site } from '@/lib/site';
 
 const heroImage = '/images/hero-o-du-ngoai-troi.webp';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getPublishedProducts();
   const schema = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -56,7 +58,7 @@ export default function HomePage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
-            <Link href={`/san-pham?danh-muc=${category.slug}`} key={category.slug} className="rounded-3xl bg-white p-6 shadow-lg shadow-slate-200/70 ring-1 ring-slate-100 transition hover:-translate-y-1">
+            <Link href={`/danh-muc/${category.slug}`} key={category.slug} className="rounded-3xl bg-white p-6 shadow-lg shadow-slate-200/70 ring-1 ring-slate-100 transition hover:-translate-y-1">
               <h3 className="text-xl font-black text-blue-800">{category.name}</h3>
               <p className="mt-2 line-clamp-2 text-sm leading-7 text-slate-600">{category.description}</p>
             </Link>

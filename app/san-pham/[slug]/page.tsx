@@ -3,15 +3,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/JsonLd';
-import { getCategory, getProduct, products } from '@/lib/products';
+import { getCategory, products } from '@/lib/products';
+import { getPublishedProduct } from '@/lib/db-products';
 import { canonical, site } from '@/lib/site';
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const product = getProduct(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getPublishedProduct(slug);
   if (!product) return {};
   return {
     title: `${product.name} - Báo giá ${product.keywords[0]}`,
@@ -21,13 +23,14 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
     openGraph: {
       title: `${product.name} | Ô Dù Đại Phát`,
       description: product.shortDescription,
-      images: [{ url: product.image, width: 1200, height: 800, alt: product.name }]
+      images: [{ url: product.image, width: 1200, height: 800, alt: `${product.name} tại Ô Dù Đại Phát` }]
     }
   };
 }
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = getProduct(params.slug);
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getPublishedProduct(slug);
   if (!product) notFound();
   const category = getCategory(product.category);
   const schema = {
